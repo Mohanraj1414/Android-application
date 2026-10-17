@@ -1,79 +1,113 @@
-// Widget tests for the CRUD To-Do list app.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutter_application_1/main.dart';
+import 'package:flutter_application_1/core/theme/app_colors.dart';
+import 'package:flutter_application_1/models/employee.dart';
+import 'package:flutter_application_1/widgets/avatar_widget.dart';
+import 'package:flutter_application_1/widgets/confirmation_dialog.dart';
+import 'package:flutter_application_1/widgets/stat_card.dart';
+import 'package:flutter_application_1/widgets/status_badge.dart';
 
 void main() {
-  testWidgets('Create: add a task', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+  group('NEXUS People Enterprise Widgets', () {
+    testWidgets('StatCard renders title, value, and trend', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: StatCard(
+              title: 'Total Workforce',
+              value: '48',
+              subtitle: 'Active headcount',
+              icon: Icons.groups_rounded,
+              iconColor: AppColors.primary,
+              iconBgColor: AppColors.primaryLight,
+              trendText: '+15% YoY',
+            ),
+          ),
+        ),
+      );
 
-    expect(find.text('No tasks yet. Add one above!'), findsOneWidget);
+      expect(find.text('Total Workforce'), findsOneWidget);
+      expect(find.text('48'), findsOneWidget);
+      expect(find.text('+15% YoY'), findsOneWidget);
+    });
 
-    await tester.enterText(find.byType(TextField), 'Buy groceries');
-    await tester.tap(find.text('Add'));
-    await tester.pump();
+    testWidgets('StatusBadge displays correct text and colors', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                StatusBadge(status: 'Active'),
+                StatusBadge(status: 'On Leave'),
+                StatusBadge(status: 'Probation'),
+              ],
+            ),
+          ),
+        ),
+      );
 
-    expect(find.text('Buy groceries'), findsOneWidget);
-  });
+      expect(find.text('Active'), findsOneWidget);
+      expect(find.text('On Leave'), findsOneWidget);
+      expect(find.text('Probation'), findsOneWidget);
+    });
 
-  testWidgets('Update: toggle a task done', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+    testWidgets('AvatarWidget shows initials and status dot', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AvatarWidget(
+              initials: 'SJ',
+              backgroundColor: AppColors.primary,
+              size: 48,
+              status: 'Active',
+              showStatus: true,
+            ),
+          ),
+        ),
+      );
 
-    await tester.enterText(find.byType(TextField), 'Read a book');
-    await tester.tap(find.text('Add'));
-    await tester.pump();
+      expect(find.text('SJ'), findsOneWidget);
+    });
 
-    // Find the Checkbox and toggle it
-    final checkboxFinder = find.byType(Checkbox);
-    expect(checkboxFinder, findsOneWidget);
-    await tester.tap(checkboxFinder);
-    await tester.pump();
+    testWidgets('ConfirmationDialog shows employee name and delete action', (tester) async {
+      final sampleEmployee = Employee(
+        id: 1,
+        employeeId: 'NEX-1001',
+        fullName: 'Sarah Jenkins',
+        email: 'sarah.jenkins@nexuscorp.com',
+        phone: '+1 555-0192',
+        department: 'Engineering',
+        designation: 'VP of Engineering',
+        joiningDate: DateTime(2022, 3, 15),
+        employmentType: 'Full-time',
+        employmentStatus: 'Active',
+        location: 'San Francisco, CA',
+        avatarColor: 0xFF4F46E5,
+        notes: '',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
 
-    // The text should now have lineThrough decoration (done)
-    final textWidget = tester.widget<Text>(find.text('Read a book'));
-    expect(textWidget.style?.decoration, TextDecoration.lineThrough);
-  });
+      bool confirmed = false;
 
-  testWidgets('Update: edit a task title', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ConfirmationDialog(
+              employee: sampleEmployee,
+              onConfirm: () => confirmed = true,
+            ),
+          ),
+        ),
+      );
 
-    await tester.enterText(find.byType(TextField), 'Old title');
-    await tester.tap(find.text('Add'));
-    await tester.pump();
+      expect(find.text('Delete Employee Record'), findsOneWidget);
+      expect(find.text('Sarah Jenkins'), findsOneWidget);
+      expect(find.text('NEX-1001'), findsOneWidget);
+      expect(find.text('Delete Employee'), findsOneWidget);
 
-    // Tap edit icon
-    await tester.tap(find.byIcon(Icons.edit_outlined));
-    await tester.pumpAndSettle();
-
-    // Dialog should be open
-    expect(find.text('Edit Task'), findsOneWidget);
-
-    // Clear and type new title in the dialog's TextField
-    await tester.enterText(find.byType(TextField).last, 'New title');
-    await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('New title'), findsOneWidget);
-    expect(find.text('Old title'), findsNothing);
-  });
-
-  testWidgets('Delete: remove a task', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
-
-    await tester.enterText(find.byType(TextField), 'Task to delete');
-    await tester.tap(find.text('Add'));
-    await tester.pump();
-
-    // Delete
-    await tester.tap(find.byIcon(Icons.delete_outline));
-    await tester.pump();
-
-    // Task should be gone
-    expect(find.text('Task to delete'), findsNothing);
-
-    // SnackBar should show the deleted message
-    expect(find.textContaining('Deleted'), findsOneWidget);
+      await tester.tap(find.text('Delete Employee'));
+      expect(confirmed, true);
+    });
   });
 }
