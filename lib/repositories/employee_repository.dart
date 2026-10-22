@@ -349,4 +349,14 @@ class EmployeeRepository {
 
     return list;
   }
+
+  /// Returns the absolute path where the SQLite database is located
+  Future<String> getDatabasePath() => _dbService.getDatabasePath();
+
+  /// Returns the size in bytes of the SQLite database
+  Future<int> getDatabaseFileSize() => _dbService.getDatabaseFileSize();
+
+  /// Retrieves raw records from a database table
+  Future<List<Map<String, dynamic>>> getRawTableRows(String table, {int limit = 50}) =>
+      _dbService.getRawTableRows(table, limit: limit);
 }

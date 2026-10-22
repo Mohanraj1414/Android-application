@@ -68,7 +68,8 @@ lib/
 │   ├── employee_table.dart            # Desktop dense enterprise data table
 │   ├── growth_chart.dart              # Line chart showing workforce headcount expansion
 │   ├── dept_distribution_chart.dart   # Interactive donut chart with department breakdown
-│   └── confirmation_dialog.dart       # Two-step destructive confirmation dialog
+│   ├── confirmation_dialog.dart       # Two-step destructive confirmation dialog
+│   └── database_inspector_dialog.dart # In-app SQLite database inspector & table viewer
 └── screens/
     ├── main_layout_screen.dart        # Adaptive shell (Sidebar + Header / Drawer + BottomNav)
     ├── dashboard/
@@ -179,8 +180,60 @@ When presenting this application to the MD, follow this professional 4-step demo
 - Click the red **Delete** button: notice the **Confirmation Dialog** clearly identifying the employee, ID, and department before taking any action.
 - Confirm deletion: observe the removal from the local database, toast notification, and dashboard metrics returning to 10 with a logged `Employee Offboarded` audit event.
 
-### Step 5: System Settings & Demo Reset
+### Step 5: System Settings, Database Inspection & Demo Reset
 - Open **Settings**.
-- View the database engine statistics (`nexus_people_enterprise.db`).
+- View the database engine statistics and exact file path (`nexus_people_enterprise.db`).
+- Click **View Raw Database** to open the **SQLite Database Inspector**:
+  - View live SQL records in `employees` table (including manual location column).
+  - View live SQL records in `activity_logs` table.
+  - Review the in-app guide on how to inspect the file externally.
 - Click **Export Summary** to view the executive metrics snapshot.
 - Click **Reset Demo Data**: confirms and cleanly re-populates the original 10 demonstration profiles.
+
+---
+
+## 💾 Where the Data is Stored and How to View It
+
+All workforce data, departments, role assignments, manual locations, and audit event logs are persisted in a local relational **SQLite 3 database** file named `nexus_people_enterprise.db`.
+
+### 1. In-App Direct Inspection (Fastest & Easiest)
+You can inspect the raw database records directly inside the app without external tools:
+1. Navigate to **Settings** in the application.
+2. In the **Data & Persistence Engine** section, click **View Raw Database**.
+3. A modal opens with:
+   - **`employees` tab**: Live `SELECT * FROM employees` showing all columns (`id`, `employee_id`, `full_name`, `department`, `designation`, `location`, `email`, `employment_status`, `joining_date`).
+   - **`activity_logs` tab**: Live `SELECT * FROM activity_logs` showing every historical audit event.
+   - **Database Storage Path**: Displays the absolute path on your filesystem with a 1-tap **Copy Path** button.
+
+### 2. Physical File Location on Disk
+
+#### On Windows (Desktop Preview):
+```text
+C:\Users\<YourUsername>\Documents\NexusPeople\nexus_people_enterprise.db
+```
+*(You can open File Explorer, paste this path into the address bar, or copy it directly from the app's Settings screen).*
+
+#### On Android (Emulator or Physical Device):
+```text
+/data/data/com.example.flutter_application_1/databases/nexus_people_enterprise.db
+```
+
+### 3. How to Open and View the `.db` File with External Tools
+
+- **Using DB Browser for SQLite (Recommended Free GUI)**:
+  1. Download and install [DB Browser for SQLite](https://sqlitebrowser.org/).
+  2. Open DB Browser and click **Open Database**.
+  3. Browse to the database path above (or paste the copied path).
+  4. Click the **Browse Data** tab and select the `employees` table to view all records in a spreadsheet grid.
+
+- **Using VS Code (SQLite Viewer Extension)**:
+  1. In VS Code, install the extension **"SQLite Viewer"** by Florian Klampfer.
+  2. In the VS Code file explorer or `File -> Open File`, select `nexus_people_enterprise.db`.
+  3. VS Code will render the database tables and columns directly in your editor.
+
+- **Viewing on Android via ADB (Command Line)**:
+  ```powershell
+  # Extract the SQLite database from your Android device to your computer:
+  adb exec-out run-as com.example.flutter_application_1 cat databases/nexus_people_enterprise.db > nexus_people_enterprise.db
+  ```
+  Then open the extracted `nexus_people_enterprise.db` file using DB Browser for SQLite.

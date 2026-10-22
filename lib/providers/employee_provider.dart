@@ -21,6 +21,8 @@ class EmployeeProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _errorMessage;
+  String _databasePath = '';
+  int _databaseFileSize = 0;
 
   // Search & Filter State
   String _searchQuery = '';
@@ -36,6 +38,8 @@ class EmployeeProvider extends ChangeNotifier {
   List<ActivityLog> get activityLogs => _activityLogs;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String get databasePath => _databasePath;
+  int get databaseFileSize => _databaseFileSize;
 
   String get searchQuery => _searchQuery;
   String? get selectedDepartment => _selectedDepartment;
@@ -116,18 +120,24 @@ class EmployeeProvider extends ChangeNotifier {
       final statsFuture = _repository.getDashboardStats();
       final deptsFuture = _repository.getDepartments();
       final logsFuture = _repository.getActivityLogs();
+      final pathFuture = _repository.getDatabasePath();
+      final sizeFuture = _repository.getDatabaseFileSize();
 
       final results = await Future.wait([
         employeesFuture,
         statsFuture,
         deptsFuture,
         logsFuture,
+        pathFuture,
+        sizeFuture,
       ]);
 
       _allEmployees = results[0] as List<Employee>;
       _dashboardStats = results[1] as DashboardStats;
       _departments = results[2] as List<Department>;
       _activityLogs = results[3] as List<ActivityLog>;
+      _databasePath = results[4] as String;
+      _databaseFileSize = results[5] as int;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = 'Failed to load enterprise records: $e';
@@ -136,6 +146,10 @@ class EmployeeProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Retrieves raw database rows for live in-app inspection
+  Future<List<Map<String, dynamic>>> getRawTableRows(String table, {int limit = 50}) =>
+      _repository.getRawTableRows(table, limit: limit);
 
   /// Adds a new employee to SQLite
   Future<bool> addEmployee(Employee employee) async {

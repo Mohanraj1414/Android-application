@@ -304,6 +304,30 @@ class DatabaseService {
     });
   }
 
+  /// Returns the absolute filesystem path where the SQLite database is stored
+  Future<String> getDatabasePath() async {
+    final db = await database;
+    return db.path;
+  }
+
+  /// Returns the current database file size in bytes
+  Future<int> getDatabaseFileSize() async {
+    try {
+      final db = await database;
+      final file = File(db.path);
+      if (await file.exists()) {
+        return await file.length();
+      }
+    } catch (_) {}
+    return 0;
+  }
+
+  /// Retrieves raw records directly from any SQLite table for inspection
+  Future<List<Map<String, dynamic>>> getRawTableRows(String table, {int limit = 50}) async {
+    final db = await database;
+    return await db.query(table, limit: limit, orderBy: 'id DESC');
+  }
+
   /// Closes database connection safely
   Future<void> close() async {
     final db = _database;
