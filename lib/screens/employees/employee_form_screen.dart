@@ -30,12 +30,12 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
   late TextEditingController _designationController;
+  late TextEditingController _locationController;
   late TextEditingController _notesController;
 
   late String _selectedDepartment;
   late String _selectedEmploymentType;
   late String _selectedStatus;
-  late String _selectedLocation;
   late DateTime _selectedJoiningDate;
   late int _selectedAvatarColor;
 
@@ -52,12 +52,12 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
     _emailController = TextEditingController(text: emp?.email ?? '');
     _phoneController = TextEditingController(text: emp?.phone ?? '');
     _designationController = TextEditingController(text: emp?.designation ?? '');
+    _locationController = TextEditingController(text: emp?.location ?? '');
     _notesController = TextEditingController(text: emp?.notes ?? '');
 
     _selectedDepartment = emp?.department ?? AppConstants.departments.first;
     _selectedEmploymentType = emp?.employmentType ?? AppConstants.employmentTypes.first;
     _selectedStatus = emp?.employmentStatus ?? AppConstants.employmentStatuses.first;
-    _selectedLocation = emp?.location ?? AppConstants.locations.first;
     _selectedJoiningDate = emp?.joiningDate ?? DateTime.now();
     _selectedAvatarColor = emp?.avatarColor ?? AppConstants.avatarColorHexes.first;
 
@@ -85,6 +85,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _designationController.dispose();
+    _locationController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -136,7 +137,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       joiningDate: _selectedJoiningDate,
       employmentType: _selectedEmploymentType,
       employmentStatus: _selectedStatus,
-      location: _selectedLocation,
+      location: _locationController.text.trim(),
       avatarColor: _selectedAvatarColor,
       notes: _notesController.text.trim(),
       createdAt: widget.employee?.createdAt ?? now,
@@ -480,30 +481,13 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Office / Location *',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                DropdownButtonFormField<String>(
-                                  initialValue: _selectedLocation,
-                                  isExpanded: true,
-                                  decoration: const InputDecoration(),
-                                  items: AppConstants.locations.map(
-                                    (l) => DropdownMenuItem(value: l, child: Text(l, style: const TextStyle(fontSize: 13))),
-                                  ).toList(),
-                                  onChanged: (val) {
-                                    if (val != null) setState(() => _selectedLocation = val);
-                                  },
-                                ),
-                              ],
+                            child: CustomTextField(
+                              label: 'Office / Work Location',
+                              hintText: 'e.g. San Francisco, CA / London / Remote',
+                              controller: _locationController,
+                              isRequired: true,
+                              validator: (val) => Validators.required(val, 'Work location'),
+                              prefixIcon: const Icon(Icons.location_on_outlined, size: 20, color: AppColors.textMuted),
                             ),
                           ),
                         ],

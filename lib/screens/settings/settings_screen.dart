@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
+import 'package:flutter/services.dart';
 import '../../providers/employee_provider.dart';
 import '../../widgets/avatar_widget.dart';
+import '../../widgets/database_inspector_dialog.dart';
 
 /// Settings & System Management screen for executive configuration and demo controls.
 class SettingsScreen extends StatelessWidget {
@@ -217,11 +219,72 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     _buildSettingItem(
                       icon: Icons.table_chart_outlined,
-                      title: 'Local SQLite Database',
-                      subtitle: 'Persistent relational storage (nexus_people_enterprise.db)',
-                      trailing: Text(
-                        '${provider.allEmployees.length} Records',
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                      title: 'Local SQLite Database (Storage)',
+                      subtitle: '${provider.allEmployees.length} employee records persistently stored in SQLite',
+                      trailing: ElevatedButton.icon(
+                        onPressed: () => DatabaseInspectorDialog.show(context),
+                        icon: const Icon(Icons.manage_search_rounded, size: 16),
+                        label: const Text('View Raw Database'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceSubtle,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Database Storage Path:',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  Clipboard.setData(ClipboardData(text: provider.databasePath));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Copied SQLite path to clipboard.')),
+                                  );
+                                },
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.copy_rounded, size: 13, color: AppColors.primary),
+                                    SizedBox(width: 4),
+                                    Text('Copy Path', style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          SelectableText(
+                            provider.databasePath.isNotEmpty
+                                ? provider.databasePath
+                                : 'nexus_people_enterprise.db (Local Storage)',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.navyDark,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const Divider(height: 20),
